@@ -22,14 +22,28 @@ func findFileinPath(filename string, pathlist []string) (string, bool, error) {
 		if path == "" {
 			continue
 		}
-		if path[len(path)-1] == '\\' {
+		pathlen := len(path)
+		if path[0] == '%' {
+			// get the environment value between the pair of %.
+			envname := ""
+			for j := 1; path[j] != '%' && j < pathlen; j++ {
+				envname = envname + string(path[j])
+			}
+			newpath := os.Getenv(envname)
+			if newpath == "" {
+				continue
+			}
+			fmt.Println("the env name",envname,"has the value",newpath,".")
+			path = newpath
+		}
+		if path[pathlen-1] == '\\' {
 			fullpath = path + filename
 		} else {
 			fullpath = path + "\\" + filename
 		}
 		if _, err = os.Lstat(fullpath); err == nil {
 			if (*verboseFlag) {
-				fmt.Println("the file ",fullpath,"is found in a directory within the PATH environment variable.")
+				fmt.Println("the file",fullpath,"is found in a directory within the PATH environment variable.")
 			}
 			found = true
 			foundPath = fullpath
