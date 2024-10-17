@@ -13,12 +13,13 @@ var (
 	quietFlag *bool = flag.Bool("q", false, "quiet mode")
 )
 
-func findFileinPath(filename string, pathlist []string) (string, bool, error) {
+func findFileinPath(filename string, pathlist []string) (string, int, bool, error) {
 	var err error
 	found := false
 	foundPath := ""
 	fullpath := ""
-	for _, path := range pathlist {
+	index1 := -1
+	for index, path := range pathlist {
 		if path == "" {
 			continue
 		}
@@ -45,6 +46,7 @@ func findFileinPath(filename string, pathlist []string) (string, bool, error) {
 			if (*verboseFlag) {
 				fmt.Println("the file",fullpath,"is found in a directory within the PATH environment variable.")
 			}
+			index1 = index
 			found = true
 			foundPath = fullpath
 			break
@@ -59,11 +61,11 @@ func findFileinPath(filename string, pathlist []string) (string, bool, error) {
 			//if errors.As(err, &e) {
 			//	err = nil
 			} else {
-				return "",false,err
+				return "",-1,false,err
 			}
 		}
 	}
-	return foundPath,found,err
+	return foundPath,index1,found,err
 }
 
 func main() {
@@ -98,10 +100,12 @@ func main() {
 	if len(arg) == 1 {
 		fullpath := ""
 		found := false
+		index := -1
 		var err error
-		fullpath, found, err = findFileinPath(arg[0],envpatharray)
+		fullpath, index, found, err = findFileinPath(arg[0],envpatharray)
 		if (err == nil) && (found == true) {
 			if (!*quietFlag) {
+				fmt.Println("The PATH index number is", index)
 				fmt.Println("the full path to the file is",fullpath)
 			}
 			os.Exit(0)
