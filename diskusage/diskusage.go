@@ -22,10 +22,7 @@ type DiskSpaceStatus struct {
 func (d DiskSpaceStatus) String() string {
 	p := message.NewPrinter(language.English)
 	// return fmt.Sprintf("All Space %d\nUsed Space %d\nFreeSpace %d\n", d.All, d.Used, d.Free)
-	// the line "return p.Sprintf("All Space %d\nUsed Space %d\nFreeSpace %d\n", d.All, d.Used, d.Free)" gives a "the variable p is unused" error.
-	//s := p.Sprintf("All Space %d\nUsed Space %d\nFreeSpace %d\n", d.All, d.Used, d.Free)
-	//return s
-	return p.Sprintf("All Space %d\nUsed Space %d\nFreeSpace %d", d.All, d.Used, d.Free)
+	return p.Sprintf("All Space %d bytes\nUsed Space %d bytes\nFreeSpace %d bytes", d.All, d.Used, d.Free)
 }
 
 func DiskUsage(path string) (DiskSpaceStatus, error, error) {
@@ -46,11 +43,11 @@ func DiskUsage(path string) (DiskSpaceStatus, error, error) {
 		return DiskSpaceStatus{}, errno, err
 	}
 
-	var disk DiskSpaceStatus
-	disk.All = lpTotalNumberOfBytes
-	disk.Free = lpTotalNumberOfFreeBytes
-	disk.Used = lpTotalNumberOfBytes - lpFreeBytesAvailable
-	return disk, nil, nil
+	return DiskSpaceStatus{
+		All: lpTotalNumberOfBytes,
+		Free: lpTotalNumberOfFreeBytes,
+		Used: lpTotalNumberOfBytes - lpFreeBytesAvailable,
+	}, nil, nil
 }
 
 func main() {
