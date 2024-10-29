@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"os"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -51,6 +53,14 @@ func DiskUsage(path string) (DiskSpaceStatus, error, error) {
 }
 
 func main() {
+	versionFlag := flag.Bool("version", false, "print version information")
+	flag.Parse()
+	if *versionFlag {
+		printVersion()
+		os.Exit(0)
+	}
+
+
 	drive := "C:"
 	fmt.Println("disk space status for Drive ", drive)
 	dss, windowsGetLastError, callError := DiskUsage(drive)
