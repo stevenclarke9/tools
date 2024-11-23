@@ -68,7 +68,6 @@ func main() {
 	flag.Parse()
 
 	drive := "C:"
-	fmt.Println("len(*driveFlag) = ", len(*driveFlag))
 	if len(*driveFlag) == 1 {
 		if drives := duw.GetAllDrives(); slices.Contains(drives,*driveFlag) {
 			drive = *driveFlag + ":"
