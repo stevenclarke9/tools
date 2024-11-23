@@ -4,11 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
+	
+	duw "github.com/stevenclarke9/tools/diskusage/drives/windows"
 )
 
 // diskSpaceStatus contains the size of the space on the requested disk drive.
@@ -61,15 +64,19 @@ func DiskUsage(path string) (DiskSpaceStatus, error, error) {
 }
 
 func main() {
-	versionFlag := flag.Bool("version", false, "print version information")
+	driveFlag := flag.String("d", "", "diskusage for drive letter")
 	flag.Parse()
-	if *versionFlag {
-		printVersion()
-		os.Exit(0)
-	}
-
 
 	drive := "C:"
+	fmt.Println("len(*driveFlag) = ", len(*driveFlag))
+	if len(*driveFlag) == 1 {
+		if drives := duw.GetAllDrives(); slices.Contains(drives,*driveFlag) {
+			drive = *driveFlag + ":"
+		} else {
+			fmt.Println("Available drives: ", drives)
+			os.Exit(1)
+		}
+	}
 	fmt.Println("disk space status for Drive ", drive)
 	dss, windowsGetLastError, callError := DiskUsage(drive)
 	if windowsGetLastError != nil {
