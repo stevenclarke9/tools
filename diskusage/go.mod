@@ -1,4 +1,4 @@
-module diskusage
+module github.com/stevenclarke9/tools/diskusage
 
 go 1.22.2
 

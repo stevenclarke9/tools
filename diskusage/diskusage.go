@@ -11,7 +11,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	
-	duw "github.com/stevenclarke9/tools/diskusage/drives/windows"
+	duw "github.com/stevenclarke9/tools/diskusage/internal/drives/windows"
 )
 
 // diskSpaceStatus contains the size of the space on the requested disk drive.
