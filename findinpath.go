@@ -112,7 +112,7 @@ func main() {
 		} else {
 			if err != nil {
 				if (!*quietFlag) {
-					fmt.Println("ERROR:",err)
+					fmt.Fprintln(os.Stderr, "ERROR:",err)
 				}
 			} else {
 				if (!*quietFlag) {
@@ -123,7 +123,7 @@ func main() {
 		}
 	} else {
 		if (!*quietFlag) {
-			fmt.Println("one filename only")
+			fmt.Fprintln(os.Stderr, "one filename only")
 		}
 		os.Exit(1)
 	}
