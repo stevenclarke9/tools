@@ -8,37 +8,14 @@ import (
 	"unsafe"
 
 	"golang.org/x/sys/windows"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
+	// "golang.org/x/text/language"
+	// "golang.org/x/text/message"
 	
 	"github.com/stevenclarke9/tools/diskusage/internal/drive"
 )
 
-// diskSpaceStatus contains the size of the space on the requested disk drive.
-// All is the total space size in bytes of all the drive.
-// Used is the used space in bytes on the drive.
-// Free is the free space in bytes on the drive
-type DiskSpaceStatus struct {
-	All  uint64
-	Used uint64
-	Free uint64
-}
 
-func (d DiskSpaceStatus) String() string {
-	p := message.NewPrinter(language.English)
-	// return fmt.Sprintf("All Space %d\nUsed Space %d\nFreeSpace %d\n", d.All, d.Used, d.Free)
-	var usedPercentage float64
-	usedPercentage = float64((float64(d.Used) / float64(d.All)) * 100)
-	fmt.Printf("usedPercentage: %.2f\n", usedPercentage)
-	freePercentage := 100 - usedPercentage
-	
-	return p.Sprintf("All Space %d bytes %d%%\nUsed Space %d bytes %.2f%%\nFree Space %d bytes %.2f%%",
-		d.All, 100,
-		d.Used, usedPercentage,
-		d.Free, freePercentage)
-}
-
-func DiskUsage(path string) (DiskSpaceStatus, error, error) {
+func DiskUsage(path string) (drive.DiskSpaceStatus, error, error) {
 	h := windows.MustLoadDLL("kernel32.dll")
 	c := h.MustFindProc("GetDiskFreeSpaceExW")
 	lpFreeBytesAvailable := uint64(0)
@@ -46,17 +23,22 @@ func DiskUsage(path string) (DiskSpaceStatus, error, error) {
 	lpTotalNumberOfFreeBytes := uint64(0)
 
 	// r1, r2, err := c.Call(uintptr(unsafe.Pointer(windows.StringToUTF16Ptr("C:"))),
-	_, _, err := c.Call(uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(path))),
+	r1, r2, err := c.Call(uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(path))),
 		uintptr(unsafe.Pointer(&lpFreeBytesAvailable)),
 		uintptr(unsafe.Pointer(&lpTotalNumberOfBytes)),
 		uintptr(unsafe.Pointer(&lpTotalNumberOfFreeBytes)))
-	fmt.Println(fmt.Sprintf("%s",err))
+
+	fmt.Println("first result:", r1)
+	fmt.Println("second result:", r2)
+	fmt.Println("return messsge:",fmt.Sprintf("|%s|",err))
+	errno := windows.GetLastError()
+	fmt.Println("errno:", errno)
+
 	if fmt.Sprintf("%s",err) != "The operation completed successfully." {
-		errno := windows.GetLastError()
-		return DiskSpaceStatus{}, errno, err
+		return drive.DiskSpaceStatus{}, errno, err
 	}
 
-	return DiskSpaceStatus{
+	return drive.DiskSpaceStatus{
 		All: lpTotalNumberOfBytes,
 		Free: lpTotalNumberOfFreeBytes,
 		Used: lpTotalNumberOfBytes - lpFreeBytesAvailable,
@@ -77,10 +59,42 @@ func main() {
 		}
 	}
 	fmt.Println("disk space status for Drive ", diskdrive)
-	dss, windowsGetLastError, callError := DiskUsage(diskdrive)
-	if windowsGetLastError != nil {
-		fmt.Println("callError: ", callError, "windowsGetLastError: ", windowsGetLastError)
+	
+	d, err := drive.GetDiskSpaceStatus(diskdrive)
+	if err != nil {
+		fmt.Println("error:", err)
 	} else {
-		fmt.Println(dss)
+		fmt.Println(d)
 	}
+	/*
+	ptr, convertError := windows.UTF16PtrFromString(directoryName)
+	if convertError == nil {
+		err := windows.GetDiskFreeSpaceEx(ptr,&freeBytesAvailableToCaller,&totalNumberOfBytes,&totalNumberOfFreeBytes)
+		if err != nil {
+			fmt.Println("windows.GetDiskFreeSpaceEx error:", err)
+			dss, windowsGetLastError, callError := DiskUsage(diskdrive)
+			if callError != nil {
+				fmt.Println("callError: ", callError, "windowsGetLastError: ", windowsGetLastError)
+			} else {
+				fmt.Println(dss)
+			}
+		} else {
+			d := DiskSpaceStatus{
+				All: totalNumberOfBytes,
+				Free: totalNumberOfFreeBytes,
+				Used: totalNumberOfBytes - totalNumberOfFreeBytes,
+			}
+			fmt.Println("windows.GetDiskFreeSpaceEx err is nil")
+			//			
+			// fmt.Println("freeBytesAvailableToCaller: ",freeBytesAvailableToCaller)
+			// fmt.Println("totalNumberOfBytes: ",totalNumberOfBytes)
+			// fmt.Println("totalNumberOfFreeBytes: ",totalNumberOfFreeBytes)
+			//
+			fmt.Println(d)
+		}
+	} else {
+		// there is a convertError value returned
+		fmt.Println("convertError:", convertError)
+	}
+	*/
 }
