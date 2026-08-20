@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	//"time"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -12,6 +13,7 @@ import (
 	// "golang.org/x/text/message"
 	
 	"github.com/stevenclarke9/tools/diskusage/internal/drive"
+	"github.com/stevenclarke9/tools/diskusage/internal/file"
 )
 
 
@@ -46,6 +48,11 @@ func DiskUsage(path string) (drive.DiskSpaceStatus, error, error) {
 }
 
 func main() {
+//	now := time.Now()
+//	filetime := file.FormatTime24Hour(now)
+
+	outputFile := flag.String("o", "", "write diskusage to a file")
+
 	driveFlag := flag.String("d", "", "diskusage for drive letter")
 	flag.Parse()
 
@@ -58,43 +65,30 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	fmt.Println("disk space status for Drive ", diskdrive)
+
+	var filePtr *os.File
+	var fileErr error
+
+	if (outputFile != nil) && (*outputFile != "") {
+		fmt.Println("outputFile:", *outputFile)
+		filePtr, fileErr = file.Create(*outputFile)
+		if fileErr != nil {
+			fmt.Println("file create error:", fileErr)
+			os.Exit(2)
+		}
+	}
 	
 	d, err := drive.GetDiskSpaceStatus(diskdrive)
 	if err != nil {
 		fmt.Println("error:", err)
 	} else {
-		fmt.Println(d)
-	}
-	/*
-	ptr, convertError := windows.UTF16PtrFromString(directoryName)
-	if convertError == nil {
-		err := windows.GetDiskFreeSpaceEx(ptr,&freeBytesAvailableToCaller,&totalNumberOfBytes,&totalNumberOfFreeBytes)
-		if err != nil {
-			fmt.Println("windows.GetDiskFreeSpaceEx error:", err)
-			dss, windowsGetLastError, callError := DiskUsage(diskdrive)
-			if callError != nil {
-				fmt.Println("callError: ", callError, "windowsGetLastError: ", windowsGetLastError)
-			} else {
-				fmt.Println(dss)
-			}
-		} else {
-			d := DiskSpaceStatus{
-				All: totalNumberOfBytes,
-				Free: totalNumberOfFreeBytes,
-				Used: totalNumberOfBytes - totalNumberOfFreeBytes,
-			}
-			fmt.Println("windows.GetDiskFreeSpaceEx err is nil")
-			//			
-			// fmt.Println("freeBytesAvailableToCaller: ",freeBytesAvailableToCaller)
-			// fmt.Println("totalNumberOfBytes: ",totalNumberOfBytes)
-			// fmt.Println("totalNumberOfFreeBytes: ",totalNumberOfFreeBytes)
-			//
+		if filePtr == nil {
+			fmt.Println("disk space status for Drive ", diskdrive)
 			fmt.Println(d)
+		} else {
+			filePtr.WriteString(fmt.Sprintf("disk space status for Drive %s\n", diskdrive))
+			filePtr.WriteString(fmt.Sprint(d))
+			filePtr.Close()
 		}
-	} else {
-		// there is a convertError value returned
-		fmt.Println("convertError:", convertError)
 	}
-	*/
 }

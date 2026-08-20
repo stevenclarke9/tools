@@ -19,13 +19,12 @@ type DiskSpaceStatus struct {
 
 func (d DiskSpaceStatus) String() string {
 	p := message.NewPrinter(language.English)
-	// return fmt.Sprintf("All Space %d\nUsed Space %d\nFreeSpace %d\n", d.All, d.Used, d.Free)
-	// var usedPercentage float64
 	usedPercentage := float64((float64(d.Used) / float64(d.All)) * 100)
-	fmt.Printf("usedPercentage: %.2f\n", usedPercentage)
+	//fmt.Printf("usedPercentage: %.2f\n", usedPercentage)
 	freePercentage := 100 - usedPercentage
 	
-	return p.Sprintf("All Space %d bytes %d%%\nUsed Space %d bytes %.2f%%\nFree Space %d bytes %.2f%%",
+	return p.Sprintf("usedPercentage: %.2f%%\nAll Space %d bytes %d%%\nUsed Space %d bytes %.2f%%\nFree Space %d bytes %.2f%%",
+		usedPercentage,
 		d.All, 100,
 		d.Used, usedPercentage,
 		d.Free, freePercentage)
