@@ -2,7 +2,7 @@
 package file
 
 import (
-	// "fmt"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -45,6 +45,7 @@ func Create(suffix string) (*os.File, error) {
 		return nil, err
 	}
 	fileNamePath := filepath.Join(pwd,filename)
+	fmt.Println("fileNamePath: ", fileNamePath)
 	filePtr, err := os.Create(fileNamePath)
 	return filePtr, err
 }

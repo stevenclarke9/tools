@@ -70,7 +70,7 @@ func main() {
 	var fileErr error
 
 	if (outputFile != nil) && (*outputFile != "") {
-		fmt.Println("outputFile:", *outputFile)
+		//fmt.Println("outputFile:", *outputFile)
 		filePtr, fileErr = file.Create(*outputFile)
 		if fileErr != nil {
 			fmt.Println("file create error:", fileErr)
