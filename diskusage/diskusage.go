@@ -52,14 +52,13 @@ func main() {
 //	filetime := file.FormatTime24Hour(now)
 
 	outputFile := flag.String("o", "", "write diskusage to a file")
-
-	driveFlag := flag.String("d", "", "diskusage for drive letter")
+	driveFlag := flag.String("d", "C", "diskusage for drive letter")
 	flag.Parse()
 
-	diskdrive := "C:"
-	if len(*driveFlag) == 1 {
-		if drives := drive.GetAllDrives(); slices.Contains(drives,*driveFlag) {
-			diskdrive = *driveFlag + ":"
+	diskdrive := *driveFlag
+	if len(diskdrive) == 1 {
+		if drives := drive.GetAllDrives(); slices.Contains(drives,diskdrive) {
+			diskdrive = diskdrive + ":"
 		} else {
 			fmt.Println("Available drives: ", drives)
 			os.Exit(1)
@@ -82,11 +81,12 @@ func main() {
 	if err != nil {
 		fmt.Println("error:", err)
 	} else {
+		diskDriveStatusLine := fmt.Sprintf("disk space status for Drive %s\n", diskdrive)
 		if filePtr == nil {
-			fmt.Println("disk space status for Drive ", diskdrive)
+			fmt.Print(diskDriveStatusLine)
 			fmt.Println(d)
 		} else {
-			filePtr.WriteString(fmt.Sprintf("disk space status for Drive %s\n", diskdrive))
+			filePtr.WriteString(diskDriveStatusLine)
 			filePtr.WriteString(fmt.Sprint(d))
 			filePtr.Close()
 		}
